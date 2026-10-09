@@ -258,6 +258,5 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .gallery a{display:block;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--line)}
 .gallery img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
 .gallery a:hover img{transform:scale(1.04)}
-.feature .visual.dm{position:relative;padding:0;background:#FAFAFA;min-height:0;aspect-ratio:auto}
-.feature .visual.dm img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
-@media (max-width:860px){.feature .visual.dm{aspect-ratio:1200/809}}
+.feature .visual.li{background:linear-gradient(90deg,#FAFAFA 0%,#FAFAFA 18%,rgba(250,250,250,0) 45%),url(/assets/img/li-art.jpg) right bottom/auto 100% no-repeat,#FAFAFA;color:#1F6B66}
+.feature .visual.li span{color:#2E7D77;font-weight:600;letter-spacing:.06em}
