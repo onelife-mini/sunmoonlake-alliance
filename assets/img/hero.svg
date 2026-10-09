@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="日月潭日出插畫">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#F2D8B8"/>
+      <stop offset="35%" stop-color="#F4B58E"/>
+      <stop offset="70%" stop-color="#D7C8B0"/>
+      <stop offset="100%" stop-color="#B6CCC8"/>
+    </linearGradient>
+
+    <radialGradient id="sunGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%"  stop-color="#FFD9A8" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FFB37D" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#FFB37D" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#5A99A8"/>
+      <stop offset="40%" stop-color="#2E7384"/>
+      <stop offset="100%" stop-color="#0F3F4A"/>
+    </linearGradient>
+
+    <linearGradient id="bank" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#1B4F5C"/>
+      <stop offset="100%" stop-color="#0F3F4A"/>
+    </linearGradient>
+
+    <pattern id="paper" x="0" y="0" width="240" height="240" patternUnits="userSpaceOnUse">
+      <filter id="grain">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+        <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/>
+      </filter>
+      <rect width="240" height="240" filter="url(#grain)"/>
+    </pattern>
+  </defs>
+
+  <!-- Sky band -->
+  <rect width="1600" height="660" fill="url(#sky)"/>
+
+  <!-- Sun glow halo -->
+  <circle cx="1140" cy="360" r="280" fill="url(#sunGlow)"/>
+  <!-- Sun core -->
+  <circle cx="1140" cy="360" r="92" fill="#FFB37D"/>
+  <circle cx="1140" cy="360" r="68" fill="#FFD9A8"/>
+
+  <!-- Light reflection band on horizon -->
+  <rect x="0" y="640" width="1600" height="22" fill="#F4B58E" opacity="0.55"/>
+
+  <!-- Far mountains (lightest, hazy) -->
+  <path fill="#7AA0AC" opacity="0.55" d="
+    M0,540
+    L70,495 L150,520 L230,470 L320,505 L420,460
+    L520,500 L610,455 L720,495 L820,460 L930,500
+    L1040,465 L1160,505 L1270,470 L1390,510 L1500,475 L1600,510
+    L1600,660 L0,660 Z"/>
+
+  <!-- Mid mountains -->
+  <path fill="#4A8C9C" d="
+    M0,580
+    L80,535 L180,565 L280,500 L380,545 L490,485
+    L600,535 L720,470 L840,525 L950,475 L1080,520
+    L1200,470 L1320,510 L1440,475 L1540,515 L1600,495
+    L1600,660 L0,660 Z"/>
+
+  <!-- Near mountains (darkest, includes Lalu Island context) -->
+  <path fill="#1E5F6E" d="
+    M0,620
+    L70,580 L160,605 L260,555 L360,605 L470,560
+    L580,610 L700,565 L820,615 L930,570 L1050,610
+    L1170,575 L1280,615 L1400,580 L1510,615 L1600,595
+    L1600,660 L0,660 Z"/>
+
+  <!-- Foreground hill silhouette on left, frames the composition -->
+  <path fill="#0F3F4A" d="
+    M0,660 L0,540
+    L40,520 L90,545 L150,510 L210,540 L270,520
+    L330,560 L380,540 L420,580 L460,600 L500,650 L520,660 Z"/>
+
+  <!-- Lake -->
+  <rect x="0" y="660" width="1600" height="200" fill="url(#lake)"/>
+
+  <!-- Sun reflection on lake -->
+  <ellipse cx="1140" cy="668" rx="140" ry="6" fill="#FFD9A8" opacity="0.55"/>
+  <rect x="1080" y="670" width="120" height="4" fill="#FFB37D" opacity="0.55"/>
+  <rect x="1095" y="685" width="90" height="3" fill="#FFB37D" opacity="0.45"/>
+  <rect x="1110" y="703" width="60" height="2" fill="#FFB37D" opacity="0.35"/>
+  <rect x="1120" y="720" width="40" height="2" fill="#FFB37D" opacity="0.25"/>
+
+  <!-- Ripple lines -->
+  <g stroke="#DCEAEE" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.30">
+    <line x1="80"  y1="690" x2="320"  y2="688"/>
+    <line x1="420" y1="700" x2="660"  y2="702"/>
+    <line x1="180" y1="725" x2="430"  y2="724"/>
+    <line x1="540" y1="735" x2="780"  y2="737"/>
+    <line x1="80"  y1="765" x2="380"  y2="763"/>
+    <line x1="460" y1="780" x2="700"  y2="782"/>
+    <line x1="780" y1="755" x2="990"  y2="757"/>
+    <line x1="40"  y1="800" x2="290"  y2="802"/>
+    <line x1="380" y1="820" x2="630"  y2="822"/>
+    <line x1="900" y1="800" x2="1120" y2="803"/>
+    <line x1="1280" y1="770" x2="1480" y2="772"/>
+    <line x1="1340" y1="800" x2="1560" y2="802"/>
+  </g>
+
+  <!-- Lalu Island (拉魯島) — iconic 日月潭 feature -->
+  <g transform="translate(820, 715)">
+    <ellipse cx="0" cy="6" rx="62" ry="3.5" fill="#0F3F4A" opacity="0.5"/>
+    <path d="M-58,2 Q-30,-12 0,-14 Q32,-14 58,0 L58,4 L-58,4 Z" fill="#0A2F38"/>
+    <path d="M-48,-2 Q-20,-15 0,-15 Q26,-15 48,-2 Z" fill="#1E5F6E" opacity="0.6"/>
+    <!-- Tiny pavilion -->
+    <rect x="-3" y="-22" width="6" height="8" fill="#0A2F38"/>
+    <path d="M-7,-22 L7,-22 L4,-26 L-4,-26 Z" fill="#0A2F38"/>
+    <!-- Tree clusters -->
+    <circle cx="-30" cy="-10" r="5" fill="#0A2F38"/>
+    <circle cx="-22" cy="-13" r="4" fill="#0A2F38"/>
+    <circle cx="22"  cy="-12" r="5" fill="#0A2F38"/>
+    <circle cx="32"  cy="-9"  r="4" fill="#0A2F38"/>
+  </g>
+
+  <!-- Distant solo SUP paddler silhouette -->
+  <g transform="translate(450, 750)" opacity="0.85">
+    <ellipse cx="0" cy="3" rx="22" ry="2.4" fill="#0A2F38"/>
+    <line x1="0" y1="2" x2="0" y2="-12" stroke="#0A2F38" stroke-width="2"/>
+    <circle cx="0" cy="-15" r="2.6" fill="#0A2F38"/>
+    <line x1="-9" y1="-7" x2="9" y2="-19" stroke="#0A2F38" stroke-width="1.6"/>
+  </g>
+
+  <!-- Foreground bank / road -->
+  <rect x="0" y="858" width="1600" height="42" fill="url(#bank)"/>
+  <!-- Road dashes -->
+  <g fill="#E8DDC8" opacity="0.4">
+    <rect x="60"   y="876" width="48" height="3"/>
+    <rect x="170"  y="876" width="48" height="3"/>
+    <rect x="280"  y="876" width="48" height="3"/>
+    <rect x="390"  y="876" width="48" height="3"/>
+    <rect x="500"  y="876" width="48" height="3"/>
+    <rect x="610"  y="876" width="48" height="3"/>
+    <rect x="720"  y="876" width="48" height="3"/>
+    <rect x="830"  y="876" width="48" height="3"/>
+    <rect x="940"  y="876" width="48" height="3"/>
+    <rect x="1050" y="876" width="48" height="3"/>
+    <rect x="1160" y="876" width="48" height="3"/>
+    <rect x="1270" y="876" width="48" height="3"/>
+    <rect x="1380" y="876" width="48" height="3"/>
+    <rect x="1490" y="876" width="48" height="3"/>
+  </g>
+
+  <!-- The SUP BUS — retro shuttle with three SUP boards on roof -->
+  <g transform="translate(960, 770)">
+    <!-- Soft ground shadow -->
+    <ellipse cx="105" cy="92" rx="118" ry="5" fill="#000" opacity="0.32"/>
+
+    <!-- Body main -->
+    <rect x="20" y="28" width="170" height="52" rx="9" fill="#F0E6CF" stroke="#0A2F38" stroke-width="2.5"/>
+    <!-- Snub nose -->
+    <path d="M0,82 L0,42 Q0,32 12,30 L24,30 L24,82 Z" fill="#F0E6CF" stroke="#0A2F38" stroke-width="2.5"/>
+    <!-- Side stripe (rescue orange) -->
+    <rect x="0" y="60" width="190" height="6" fill="#FF6A3D"/>
+    <!-- Door split line -->
+    <line x1="100" y1="32" x2="100" y2="58" stroke="#0A2F38" stroke-width="1.5"/>
+    <!-- Windshield -->
+    <path d="M3,40 Q3,33 13,33 L24,33 L24,55 L3,55 Z" fill="#1E5F6E" stroke="#0A2F38" stroke-width="1.5"/>
+    <!-- Side windows -->
+    <rect x="32"  y="36" width="28" height="20" rx="2" fill="#1E5F6E" stroke="#0A2F38" stroke-width="1.5"/>
+    <rect x="65"  y="36" width="28" height="20" rx="2" fill="#1E5F6E" stroke="#0A2F38" stroke-width="1.5"/>
+    <rect x="105" y="36" width="28" height="20" rx="2" fill="#1E5F6E" stroke="#0A2F38" stroke-width="1.5"/>
+    <rect x="138" y="36" width="28" height="20" rx="2" fill="#1E5F6E" stroke="#0A2F38" stroke-width="1.5"/>
+    <!-- Headlight -->
+    <circle cx="9" cy="68" r="3" fill="#FFD9A8" stroke="#0A2F38" stroke-width="1"/>
+
+    <!-- Wheels -->
+    <circle cx="46"  cy="92" r="13" fill="#0A2F38"/>
+    <circle cx="46"  cy="92" r="6"  fill="#F0E6CF"/>
+    <circle cx="170" cy="92" r="13" fill="#0A2F38"/>
+    <circle cx="170" cy="92" r="6"  fill="#F0E6CF"/>
+
+    <!-- Roof rack -->
+    <rect x="22" y="22" width="168" height="3" fill="#0A2F38"/>
+    <rect x="28" y="19" width="3" height="6" fill="#0A2F38"/>
+    <rect x="184" y="19" width="3" height="6" fill="#0A2F38"/>
+
+    <!-- 3 SUP boards on roof, color-graded to brand -->
+    <g>
+      <ellipse cx="106" cy="16" rx="92" ry="5" fill="#FF6A3D" stroke="#0A2F38" stroke-width="1.5"/>
+      <ellipse cx="106" cy="9"  rx="92" ry="5" fill="#E8DDC8" stroke="#0A2F38" stroke-width="1.5"/>
+      <ellipse cx="106" cy="2"  rx="92" ry="5" fill="#4A8C9C" stroke="#0A2F38" stroke-width="1.5"/>
+      <!-- Subtle stripe details on boards -->
+      <line x1="60"  y1="16" x2="152" y2="16" stroke="#0A2F38" stroke-width="0.6" opacity="0.5"/>
+      <line x1="60"  y1="9"  x2="152" y2="9"  stroke="#0A2F38" stroke-width="0.6" opacity="0.5"/>
+      <line x1="60"  y1="2"  x2="152" y2="2"  stroke="#0A2F38" stroke-width="0.6" opacity="0.5"/>
+    </g>
+    <!-- Straps -->
+    <line x1="50"  y1="-2" x2="50"  y2="22" stroke="#0A2F38" stroke-width="1.6"/>
+    <line x1="160" y1="-2" x2="160" y2="22" stroke="#0A2F38" stroke-width="1.6"/>
+  </g>
+
+  <!-- Tiny "SUP BUS" emblem on the bus side (poster-style) -->
+  
+
+  <!-- Paper grain texture overlay (subtle) -->
+  <rect width="1600" height="900" fill="url(#paper)" opacity="0.6" style="mix-blend-mode: multiply"/>
+</svg>
