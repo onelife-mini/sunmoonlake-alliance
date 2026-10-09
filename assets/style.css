@@ -254,3 +254,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
   .sticky.off{opacity:0;transform:translateY(24px);pointer-events:none}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:8px 0 4px}
+.gallery a{display:block;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--line)}
+.gallery img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.gallery a:hover img{transform:scale(1.04)}
