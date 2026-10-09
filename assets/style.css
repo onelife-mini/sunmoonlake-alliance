@@ -258,3 +258,5 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .gallery a{display:block;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--line)}
 .gallery img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
 .gallery a:hover img{transform:scale(1.04)}
+.feature .visual.dm{padding:0;background:#FAFAFA;justify-content:center;min-height:0}
+.feature .visual.dm img{width:100%;height:100%;object-fit:contain;display:block}
