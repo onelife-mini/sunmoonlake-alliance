@@ -1,1 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1D5C66"/><text x="32" y="44" font-size="34" text-anchor="middle" fill="#fff" font-family="serif">潭</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#EFEBE3"/><g transform="translate(32 32) scale(0.42) translate(-100 -100)"><path d="M44 94A56 56 0 0 1 156 94Z" fill="#16292C"/><path d="M44 106A56 56 0 0 0 156 106A92 92 0 0 1 44 106Z" fill="#B5482C"/></g></svg>
