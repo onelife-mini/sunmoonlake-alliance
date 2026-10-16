@@ -69,10 +69,11 @@ h2{font-size:30px}
 .hero{background:var(--lake-deep);color:var(--on-lake)}
 .hero-art{position:relative;line-height:0}
 .hero-img{display:block;width:100%;height:auto;aspect-ratio:1920/1016;object-fit:cover;background:#0F2E35}
-.hot{position:absolute;width:16.667%;height:25%;transition:background .2s}
+.hot{position:absolute;width:14.286%;height:25%;transition:background .2s}
 .hot:hover,.hot:focus-visible{background:rgba(255,255,255,.14);outline:3px solid #fff;outline-offset:-3px}
-.hot-join{left:66.667%;top:0}
-.hot-events{left:83.333%;top:25%}
+.hot-join{left:57.143%;top:0}
+.hot-events{left:71.429%;top:25%}
+.hot-about{left:85.714%;top:75%}
 .hero .wrap{padding-block:28px 40px;display:flex;flex-direction:column;gap:12px}
 .hero h1{font-size:clamp(30px,5vw,54px);color:#fff}
 .hero .sub{color:var(--on-lake-muted);font-size:18px;max-width:34em}
