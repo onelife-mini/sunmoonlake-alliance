@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap">
-<link rel="stylesheet" href="/assets/style.css?v=20261010a">
+<link rel="stylesheet" href="/assets/style.css?v=20261016a">
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -30,7 +30,14 @@
 </header>
 <main id="main">
 <section class="hero" data-hide-sticky>
-  <img class="hero-img" src="/assets/img/hero.svg" alt="日月潭日出插畫：湖面、群山與載著立槳板的巴士" width="1600" height="900" fetchpriority="high">
+  <div class="hero-art">
+    <picture>
+      <source type="image/webp" srcset="/assets/img/hero-members-960.webp 960w, /assets/img/hero-members.webp 1920w" sizes="100vw">
+      <img class="hero-img" src="/assets/img/hero-members.jpg" alt="來日月潭，我們都在：日月潭湖景與聯盟業者夥伴們的人像牆" width="1920" height="1016" fetchpriority="high">
+    </picture>
+    <a class="hot hot-join" href="/join/" aria-label="加入聯盟：申請入盟"></a>
+    <a class="hot hot-events" href="/events/" aria-label="參與聯盟活動"></a>
+  </div>
   <div class="wrap">
     <span class="badge ev">日月潭業者共同發起</span>
     <h1><span class="nb">日月潭水域活動</span><span class="nb">產業聯盟</span></h1>
