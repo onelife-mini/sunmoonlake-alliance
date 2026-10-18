@@ -280,3 +280,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .smap-svg{display:block;width:100%;height:auto}
 .smap figcaption{font-size:13px;color:var(--muted);margin-top:6px;padding:0 6px}
 @media (max-width:900px){.mem-wrap{grid-template-columns:1fr}.smap{position:static}}
+/* 不接單聲明 */
+.noorder{display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px;background:var(--lake-deep);border:1.5px solid var(--sun-lt);border-radius:16px;padding:24px 28px;margin-top:8px}
+.noorder strong{font-family:var(--serif);font-size:clamp(19px,2.4vw,24px);color:var(--sun-lt);line-height:1.4}
+.noorder p{flex:1 1 300px;margin:0;color:var(--on-lake-muted);font-size:15px}
