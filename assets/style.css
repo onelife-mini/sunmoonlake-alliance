@@ -265,3 +265,18 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .gallery a:hover img{transform:scale(1.04)}
 .feature .visual.li{background:linear-gradient(90deg,#FAFAFA 0%,#FAFAFA 18%,rgba(250,250,250,0) 45%),url(/assets/img/li-art.jpg) right bottom/auto 100% no-repeat,#FAFAFA;color:#1F6B66}
 .feature .visual.li span{color:#2E7D77;font-weight:600;letter-spacing:.06em}
+
+/* 聯盟夥伴：名單＋集合點地圖 */
+.mem-wrap{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:32px;align-items:start;margin-top:28px}
+.mem-grp{font-family:var(--sans);font-size:16px;font-weight:700;display:flex;align-items:baseline;gap:10px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.mem-grp span{font-size:14px;font-weight:500;color:var(--muted)}
+.mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.mem-tile{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink);font-weight:500;font-size:15px;line-height:1.35;min-height:64px;transition:border-color .2s}
+.mem-tile:hover{border-color:var(--lake)}
+.mem-tile img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;background:#fff;border:1px solid var(--line)}
+.mem-tile.add{border-style:dashed;background:transparent;color:var(--muted)}
+.mem-tile.add i{width:44px;height:44px;border-radius:50%;border:1.5px dashed var(--line);display:grid;place-items:center;font-style:normal;flex:none}
+.smap{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 12px 16px;position:sticky;top:88px}
+.smap-svg{display:block;width:100%;height:auto}
+.smap figcaption{font-size:13px;color:var(--muted);margin-top:6px;padding:0 6px}
+@media (max-width:900px){.mem-wrap{grid-template-columns:1fr}.smap{position:static}}
