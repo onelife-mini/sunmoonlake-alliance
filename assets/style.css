@@ -353,3 +353,8 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .head-facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .head-facts span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:4px 12px;font-size:14px;white-space:nowrap}
 @media (max-width:600px){.article .btn{flex:1 1 100%;text-align:center}}
+.fee-line{background:var(--tint);border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:15px}
+.fee-line b{color:var(--lake)}
+.fee-line strong{font-family:var(--serif);font-size:20px;color:var(--lake)}
+.fee-line .tag{background:var(--sun-soft);color:var(--sun);font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.fee-line small{flex-basis:100%;color:var(--muted);font-size:13px}

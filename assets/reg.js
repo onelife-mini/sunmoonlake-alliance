@@ -19,6 +19,21 @@
   var state = $('#regState'), done = $('#regDone');
   var show = function (sel, on) { $(sel).hidden = !on; };
 
+  var EV = null;   // 後端回傳的活動設定（費用、審核方式等）
+
+  /* ---------- 費用 ---------- */
+  var feeEl = document.createElement('p'); feeEl.className = 'fee-line'; feeEl.hidden = true;
+  function people() { return isMember() ? count : $$('input[name=person]').filter(function (i) { return i.value.trim(); }).length || list.children.length; }
+  function updateFee() {
+    if (!EV || form.elements.member.value === '') { feeEl.hidden = true; return; }
+    var unit = isMember() && EV.memberFee != null ? EV.memberFee : EV.fee, n = people();
+    feeEl.hidden = false;
+    if (!unit) { feeEl.innerHTML = '<b>費用</b> 免費參加'; return; }
+    feeEl.innerHTML = '<b>費用</b> 每人 ' + unit + ' 元 × ' + n + ' 位 ＝ <strong>' + unit * n + ' 元</strong>' +
+      (isMember() && EV.memberFee != null && EV.memberFee < EV.fee ? '<span class="tag">聯盟優惠</span>' : '') +
+      '<small>' + (EV.pay === '匯款' ? '送出後確認信會附上匯款資訊' : '活動當天現場繳交') + '</small>';
+  }
+
   /* ---------- 畫面切換 ---------- */
   function isMember() { return form.elements.member.value === '1'; }
   function current() { var v = form.elements.club.value; return members.filter(function (m) { return m.name === v; })[0] || null; }
@@ -34,6 +49,7 @@
     show('#unitBox', !mem);
     show('#contactNameBox', mem && picked && !ready);
     show('#contactBox', !mem || (picked && !ready));
+    updateFee();
     if (ready) {
       $('#aContact').textContent = picked.contact;
       $('#aPhone').textContent = picked.phone;
@@ -68,6 +84,7 @@
     count = Math.max(1, Math.min(MAX, n));
     $('#cVal').textContent = count;
     $('#cMinus').disabled = count <= 1; $('#cPlus').disabled = count >= MAX;
+    if (typeof updateFee === 'function') updateFee();
   }
   $('#cMinus').addEventListener('click', function () { setCount(count - 1); });
   $('#cPlus').addEventListener('click', function () { setCount(count + 1); });
@@ -85,10 +102,13 @@
   function renumber() {
     $$('.person').forEach(function (r, i) { r.querySelector('.no').textContent = i + 1; });
     $('#peopleCount').textContent = list.children.length;
+    if (typeof updateFee === 'function') updateFee();
   }
   list.addEventListener('click', function (e) { if (e.target.classList.contains('rm')) { e.target.parentNode.remove(); renumber(); } });
   $('#addPerson').addEventListener('click', function () { addPerson(true); });
   addPerson(false);
+  var agreeLabel = form.elements.agree.closest('label'); agreeLabel.parentNode.insertBefore(feeEl, agreeLabel);
+  list.addEventListener('input', updateFee);
 
   /* ---------- 活動狀態與成員資料 ---------- */
   function showState(kind, text) { state.hidden = false; state.className = 'reg-state ' + kind; state.textContent = text; }
@@ -101,7 +121,7 @@
       .then(function (j) {
         if (!j.ok) return;
         if (j.members && j.members.length) { members = j.members; renderClubs(); refresh(); }
-        var ev = j.event;
+        var ev = j.event; EV = ev; updateFee();
         if (!ev.open) {
           var why = { paused: '目前暫停報名。', deadline: '報名已截止，謝謝大家的支持！', full: '名額已滿，謝謝大家的支持！' }[ev.reason] || '目前沒有開放報名。';
           showState('closed', why); form.hidden = true;
@@ -166,7 +186,11 @@
           (names.length ? names.join('、') + '（共 ' + people + ' 位）' : '共 ' + people + ' 位');
         $('#doneMail').textContent = j.email || email;
         $('#doneTitle').textContent = j.updated ? '我們有收到您更新的報名！' : '我們有收到您的報名！';
-        $('#doneMsg').textContent = mem ? '聯盟夥伴直接完成報名，請 11/2（一）13:00 準時出席。' : '報名資訊已送出，後續會再寄出通知給您。';
+        var when = EV ? EV.date + ' ' + EV.time.split(/[–-]/)[0] : '活動當天';
+        var msg = j.status === 'review' ? '報名資訊已送出，審核後會再寄出通知給您。'
+          : mem ? '聯盟夥伴直接完成報名，請 ' + when + ' 準時出席。' : '報名資訊已送出，後續會再寄出通知給您。';
+        if (j.amount && j.status !== 'review') msg += j.pay === '匯款' ? '費用 ' + j.amount + ' 元，匯款資訊在確認信裡。' : '費用 ' + j.amount + ' 元，請活動當天現場繳交。';
+        $('#doneMsg').textContent = msg;
         done.hidden = false;
         done.scrollIntoView({ behavior: 'smooth', block: 'center' });
       })
