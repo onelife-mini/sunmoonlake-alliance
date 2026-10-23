@@ -15,6 +15,9 @@
  */
 
 var TZ = 'Asia/Taipei';
+// 報名資料試算表（2026sunmoonlake 帳號的「聯盟活動報名」）
+var SS_ID = '1Kt31bK5rbztEBHWBoPA0wFEFLO_E92LFQqybmd4CF6w';
+function ss_() { return SpreadsheetApp.getActive() || SpreadsheetApp.openById(SS_ID); }
 var SH = { EVENTS: '活動設定', SETTINGS: '設定', MEMBERS: '聯盟成員', REG: '報名', LOG: '紀錄' };
 var MEMBER_COLS = ['單位', '聯絡人', '手機', 'Email', '備註'];
 
@@ -110,7 +113,7 @@ function eventState_(ev, used) {
 }
 
 function getMembers_() {
-  var s = SpreadsheetApp.getActive().getSheetByName(SH.MEMBERS);
+  var s = ss_().getSheetByName(SH.MEMBERS);
   var rows = s && s.getLastRow() > 1 ? s.getRange(2, 1, s.getLastRow() - 1, 4).getValues() : [];
   var list = rows.filter(function (r) { return String(r[0]).trim(); }).map(function (r, i) {
     return { row: i + 2, name: String(r[0]).trim(), contact: String(r[1]).trim(), phone: String(r[2]).replace(/[^\d+]/g, ''), email: String(r[3]).trim().toLowerCase() };
@@ -384,7 +387,7 @@ function onOpen() {
 }
 
 function setupSheets() {
-  var ss = SpreadsheetApp.getActive();
+  var ss = ss_();
   ss.setSpreadsheetTimeZone(TZ);
   ensure_(ss, SH.EVENTS, EVENT_COLS, [['coach-talk-2026', '從一次體驗到玩家：教練的陪伴力', '2026/11/02', '13:00–15:00', '魚光窯烤 埔里門市（南投縣埔里鎮中山路四段 106 號）', '', '', '開放', '開', 'https://sunmoonlake.xyz/events/coach-talk-2026/', '講者 Yellow 教練；不審核、不收費']]);
   var st = ensure_(ss, SH.SETTINGS, ['項目', '內容', '說明'], []);
@@ -456,7 +459,7 @@ function checkAccount_() {
 function uiAlert_(msg) { try { SpreadsheetApp.getUi().alert(msg); } catch (e) { Logger.log(msg); } }
 
 function sheet_(name) {
-  var s = SpreadsheetApp.getActive().getSheetByName(name);
+  var s = ss_().getSheetByName(name);
   if (!s) throw new Error('缺少分頁：' + name + '（請先執行「初始化試算表」）');
   return s;
 }
