@@ -55,12 +55,12 @@
             <input type="hidden" name="member" value="">
             <div class="f"><span class="lb">你的身分 <i>*</i></span>
               <div class="roles">
-                <button type="button" class="role member" data-m="1" aria-pressed="false"><b>聯盟成員 <span class="badge ev">聯盟夥伴</span></b><small>點選你的俱樂部就好，不用另外填單位</small></button>
+                <button type="button" class="role member" data-m="1" aria-pressed="false"><b>聯盟成員 <span class="badge ev">聯盟夥伴</span></b><small>從選單選你的俱樂部就好，不用另外填單位</small></button>
                 <button type="button" class="role" data-m="0" aria-pressed="false"><b>非聯盟成員</b><small>其他業者、教練、帶團夥伴都歡迎</small></button>
               </div>
             </div>
             <div id="regRest" hidden style="display:flex;flex-direction:column;gap:16px">
-              <div class="f" id="clubBox" hidden><span class="lb">所屬俱樂部 <i>*</i></span><div class="clubs" id="clubs" role="radiogroup" aria-label="所屬俱樂部"></div></div>
+              <div class="f" id="clubBox" hidden><label for="rClub">所屬俱樂部 <i>*</i></label><select id="rClub" name="club"><option value="">請選擇你的俱樂部</option></select></div>
               <div class="f" id="unitBox" hidden><label for="rUnit">所屬單位（選填）</label><input id="rUnit" name="unit_other" type="text" placeholder="例：○○戶外工作室；個人參加可空白" autocomplete="organization"></div>
               <div class="f"><span class="lb">參加者姓名 <i>*</i>　<span class="muted" style="font-weight:400;font-size:14px">共 <b id="peopleCount">1</b> 位，第一位為聯絡人</span></span>
                 <div class="people" id="people"></div>
@@ -94,6 +94,6 @@
 </footer>
 <a class="sticky off" id="sticky" href="#apply">立即報名</a>
 <script src="/assets/site.js?v=20261009b" defer></script>
-<script src="/assets/reg.js?v=20261023a" defer></script>
+<script src="/assets/reg.js?v=20261023b" defer></script>
 </body>
 </html>

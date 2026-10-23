@@ -8,14 +8,8 @@
   var TEST = /[?&]test=1/.test(location.search);
 
   // 與首頁「聯盟夥伴」相同，依業者名稱筆劃排序；試算表「設定」分頁的名單會覆蓋這份
-  var CLUBS = [
-    ['日出立槳', 'sunrise'], ['行舟戶外', 'gosup'], ['玩立槳', 'playsup'], ['幸福日月潭', 'xingfu'],
-    ['南投縣日月潭水上觀光遊憩發展協會', 'shuixie'], ['冒險卡達 SUP', 'kadasup'], ['迷鹿 SUP', 'milu'],
-    ['魚人立槳', 'onelife'], ['畢瓦客', 'biwak'], ['控制狂立槳', 'comechill'], ['滑人立槳', 'huaren'],
-    ['樂晴 SUP 俱樂部', 'leqing'], ['霏帆水岸', 'feifan']
-  ];
-  var SHORT = { '南投縣日月潭水上觀光遊憩發展協會': '日月潭水協' };
-  var logoOf = {}; CLUBS.forEach(function (c) { logoOf[c[0]] = c[1]; });
+  var CLUBS = ['日出立槳', '行舟戶外', '玩立槳', '幸福日月潭', '南投縣日月潭水上觀光遊憩發展協會', '冒險卡達 SUP', '迷鹿 SUP',
+    '魚人立槳', '畢瓦客', '控制狂立槳', '滑人立槳', '樂晴 SUP 俱樂部', '霏帆水岸'];
 
   var $ = function (s, el) { return (el || root).querySelector(s); };
   var $$ = function (s, el) { return [].slice.call((el || root).querySelectorAll(s)); };
@@ -29,21 +23,20 @@
     $('#clubBox').hidden = !member;
     $('#unitBox').hidden = member;
     form.hidden = false; $('#regRest').hidden = false;
-    if (!member) form.elements.unit_other.focus({ preventScroll: true });
+    (member ? form.elements.club : form.elements.unit_other).focus({ preventScroll: true });
   }
   $$('.role', form).forEach(function (b) { b.addEventListener('click', function () { setRole(b.getAttribute('data-m') === '1'); }); });
 
-  /* ---------- 俱樂部 logo 選擇 ---------- */
+  /* ---------- 俱樂部下拉選單 ---------- */
   function renderClubs(names) {
-    var box = $('#clubs');
-    box.innerHTML = names.map(function (n, i) {
-      var lg = logoOf[n];
-      return '<label class="club"><input type="radio" name="club" value="' + n.replace(/"/g, '&quot;') + '" id="club' + i + '">' +
-        '<span class="lg">' + (lg ? '<img src="/assets/logos/' + lg + '.jpg" alt="" loading="lazy">' : '<b>' + n.charAt(0) + '</b>') + '</span>' +
-        '<span class="nm">' + (SHORT[n] || n) + '</span></label>';
+    var sel = $('#rClub'), cur = sel.value;
+    sel.innerHTML = '<option value="">請選擇你的俱樂部</option>' + names.map(function (n) {
+      var v = n.replace(/"/g, '&quot;');
+      return '<option value="' + v + '">' + v + '</option>';
     }).join('');
+    if (cur) sel.value = cur;
   }
-  renderClubs(CLUBS.map(function (c) { return c[0]; }));
+  renderClubs(CLUBS);
 
   /* ---------- 參加者名單 ---------- */
   var list = $('#people');
@@ -96,7 +89,7 @@
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var member = form.elements.member.value === '1';
-    var club = (form.querySelector('input[name=club]:checked') || {}).value || '';
+    var club = form.elements.club.value;
     var names = $$('input[name=person]', list).map(function (i) { return i.value.trim(); }).filter(String);
     var phone = form.elements.phone.value.trim(), email = form.elements.email.value.trim();
     var miss = [];
