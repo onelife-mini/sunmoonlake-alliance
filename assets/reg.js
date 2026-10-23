@@ -165,8 +165,8 @@
         $('#doneWho').textContent = (mem ? picked.name + '｜' : (form.elements.unit_other.value.trim() + '｜')) +
           (names.length ? names.join('、') + '（共 ' + people + ' 位）' : '共 ' + people + ' 位');
         $('#doneMail').textContent = j.email || email;
-        $('#doneMember').hidden = !mem;
-        $('#doneTitle').textContent = j.updated ? '已更新報名！' : '報名成功！';
+        $('#doneTitle').textContent = j.updated ? '我們有收到您更新的報名！' : '我們有收到您的報名！';
+        $('#doneMsg').textContent = mem ? '聯盟夥伴直接完成報名，請 11/2（一）13:00 準時出席。' : '報名資訊已送出，後續會再寄出通知給您。';
         done.hidden = false;
         done.scrollIntoView({ behavior: 'smooth', block: 'center' });
       })

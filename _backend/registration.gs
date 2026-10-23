@@ -297,12 +297,17 @@ function eventRows_(ev, reg) {
 }
 
 function sendConfirm_(ev, reg) {
-  var subject = (reg.test ? '【測試】' : '') + (reg.updated ? '報名已更新｜' : '報名成功｜') + ev.name;
-  var intro = esc_(reg.contact || reg.names[0]) + ' 您好，<br>' + (reg.updated ? '您的報名已更新，以下是最新的報名資料。' : '已收到您的報名，以下是報名資料，活動當天見！') + (ev.remind ? '<br>活動前一天會再寄一封提醒信。' : '');
+  // 聯盟成員：直接完成報名；非聯盟成員：先告知已收到，後續再寄通知
+  var head = reg.updated ? '報名已更新' : reg.isMember ? '報名完成' : '已收到報名';
+  var msg = reg.updated ? '我們有收到您更新的報名，以下是最新的報名資料。'
+    : reg.isMember ? '我們有收到您的報名。聯盟夥伴直接完成報名，請活動當天準時出席。'
+    : '我們有收到您的報名資訊，後續會再寄出通知給您。';
+  var subject = (reg.test ? '【測試】' : '') + head + '｜' + ev.name;
+  var intro = esc_(reg.contact || reg.names[0]) + ' 您好，<br>' + msg + (ev.remind ? '<br>活動前一天會再寄一封提醒信。' : '');
   MailApp.sendEmail({
     to: reg.email, subject: subject, name: setting_('寄件名稱'), replyTo: setting_('回信信箱'),
-    htmlBody: mailHtml_(reg.updated ? '報名已更新' : '報名成功', intro, eventRows_(ev, reg), ev.url ? '活動資訊：' + esc_(ev.url) + '<br>' : ''),
-    body: '報名成功｜' + ev.name + '\n報名編號 ' + reg.id + '\n時間 ' + ev.dateText + ' ' + ev.time + '\n地點 ' + ev.place
+    htmlBody: mailHtml_(head, intro, eventRows_(ev, reg), ev.url ? '活動資訊：' + esc_(ev.url) + '<br>' : ''),
+    body: head + '｜' + ev.name + '\n' + msg + '\n報名編號 ' + reg.id + '\n時間 ' + ev.dateText + ' ' + ev.time + '\n地點 ' + ev.place
   });
 }
 
