@@ -200,6 +200,7 @@ function register_(p) {
       id = newId_();
       s.appendRow([id, now, code, isMember ? '聯盟成員' : '非聯盟成員', unit, names.join('、'), count,
         contact, "'" + phone, email, note, test, '報名成功 ' + now.slice(5, 16), '', '', '']);
+      s.getRange(s.getLastRow(), REG_COLS.indexOf('測試') + 1).insertCheckboxes();
     }
     SpreadsheetApp.flush();
 
@@ -394,8 +395,7 @@ function setupSheets() {
   if (st.getLastRow() < 2) st.getRange(2, 1, DEFAULT_SETTINGS.length, 3).setValues(DEFAULT_SETTINGS);
   var ms = ensure_(ss, SH.MEMBERS, MEMBER_COLS, DEFAULT_MEMBERS.map(function (m) { return [m, '', '', '', '']; }));
   ms.getRange('C:C').setNumberFormat('@');
-  var rs = ensure_(ss, SH.REG, REG_COLS, []);
-  rs.getRange(2, REG_COLS.indexOf('測試') + 1, 1000, 1).insertCheckboxes();
+  ensure_(ss, SH.REG, REG_COLS, []);
   ensure_(ss, SH.LOG, LOG_COLS, []);
   var ev = ss.getSheetByName(SH.EVENTS);
   ev.getRange('H2:H').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['開放', '暫停']).build());
