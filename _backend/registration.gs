@@ -364,7 +364,8 @@ function sendDigest_() {
       var v = rows[r];
       if (String(v[2]) !== ev.code || v[11] === true || String(v[12]).indexOf('取消') >= 0) continue;
       groups++; total += Number(v[6]) || 0;
-      if (new Date(String(v[1]).replace(/\//g, '-').replace(' ', 'T') + '+08:00') > since) fresh++;
+      var t = v[1] instanceof Date ? v[1] : new Date(String(v[1]).replace(/\//g, '-').replace(' ', 'T') + '+08:00');
+      if (t > since) fresh++;
       if (!v[13]) noMail++;
     }
     lines.push([ev.name, ev.dateText + '｜' + groups + ' 組 ' + total + ' 人' + (ev.capacity ? ' / 名額 ' + ev.capacity : '') +
