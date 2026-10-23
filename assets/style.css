@@ -330,3 +330,12 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
   .roles{grid-template-columns:1fr}
   .clubs{grid-template-columns:repeat(3,1fr)}
 }
+.auto{background:var(--sun-soft);border:2px solid var(--sun-lt);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.auto-h{display:flex;align-items:center;gap:8px;color:var(--sun)}
+.auto-h::before{content:"✓";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--sun-lt);color:#fff;font-size:13px}
+.auto .kv{font-size:15px}
+.auto-miss{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--muted)}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper button{font:inherit;width:44px;height:44px;border-radius:50%;border:1px solid var(--lake);background:var(--surface);color:var(--lake);font-size:22px;cursor:pointer;line-height:1}
+.stepper button:disabled{opacity:.35;cursor:default}
+.stepper output{font-family:var(--serif);font-size:28px;font-weight:700;color:var(--lake);min-width:1.5em;text-align:center}

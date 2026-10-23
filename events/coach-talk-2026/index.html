@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap">
-<link rel="stylesheet" href="/assets/style.css?v=20261023a">
+<link rel="stylesheet" href="/assets/style.css?v=20261023c">
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -43,7 +43,7 @@
       </div>
     </div>
   </section>
-  <section class="sec" id="apply">
+  <section class="sec" id="apply" data-hide-sticky>
     <div class="reg-wrap">
       <span class="eye">線上報名</span>
       <h2>報名表</h2>
@@ -55,30 +55,41 @@
             <input type="hidden" name="member" value="">
             <div class="f"><span class="lb">你的身分 <i>*</i></span>
               <div class="roles">
-                <button type="button" class="role member" data-m="1" aria-pressed="false"><b>聯盟成員 <span class="badge ev">聯盟夥伴</span></b><small>從選單選你的俱樂部就好，不用另外填單位</small></button>
-                <button type="button" class="role" data-m="0" aria-pressed="false"><b>非聯盟成員</b><small>其他業者、教練、帶團夥伴都歡迎</small></button>
+                <button type="button" class="role member" data-m="1" aria-pressed="false"><b>聯盟成員 <span class="badge ev">聯盟夥伴</span></b><small>選你的俱樂部就好，聯絡資料自動帶入，不用再填</small></button>
+                <button type="button" class="role" data-m="0" aria-pressed="false"><b>非聯盟成員</b><small>其他業者、教練、帶團夥伴都歡迎，需填寫聯絡資料</small></button>
               </div>
             </div>
             <div id="regRest" hidden style="display:flex;flex-direction:column;gap:16px">
               <div class="f" id="clubBox" hidden><label for="rClub">所屬俱樂部 <i>*</i></label><select id="rClub" name="club"><option value="">請選擇你的俱樂部</option></select></div>
-              <div class="f" id="unitBox" hidden><label for="rUnit">所屬單位（選填）</label><input id="rUnit" name="unit_other" type="text" placeholder="例：○○戶外工作室；個人參加可空白" autocomplete="organization"></div>
-              <div class="f"><span class="lb">參加者姓名 <i>*</i>　<span class="muted" style="font-weight:400;font-size:14px">共 <b id="peopleCount">1</b> 位，第一位為聯絡人</span></span>
+              <div class="auto" id="autoCard" hidden>
+                <b class="auto-h">已自動帶入聯絡資料</b>
+                <dl class="kv"><dt>聯絡人</dt><dd id="aContact"></dd><dt>手機</dt><dd id="aPhone"></dd><dt>Email</dt><dd id="aEmail"></dd></dl>
+                <small class="muted">報名成功信會寄到這個信箱。資料有變動請透過「聯繫聯盟」告訴我們。</small>
+              </div>
+              <p class="auto-miss" id="autoMiss" hidden>這個俱樂部的聯絡資料還沒建檔，這次請填一下聯絡人、手機與 Email。</p>
+              <div class="f" id="countBox" hidden><span class="lb">參加人數 <i>*</i></span>
+                <div class="stepper"><button type="button" id="cMinus" aria-label="減少一位">－</button><output id="cVal" aria-live="polite">1</output><span>位</span><button type="button" id="cPlus" aria-label="增加一位">＋</button></div>
+              </div>
+              <div class="f" id="namesBox" hidden><label for="rNames">參加者姓名（選填，一行一位）</label><textarea id="rNames" name="names_member" placeholder="不填也可以，當天現場登記" style="min-height:80px"></textarea></div>
+              <div class="f" id="peopleBox" hidden><span class="lb">參加者姓名 <i>*</i>　<span class="muted" style="font-weight:400;font-size:14px">共 <b id="peopleCount">1</b> 位，第一位為聯絡人</span></span>
                 <div class="people" id="people"></div>
                 <button type="button" class="add-person" id="addPerson">＋ 再加一位</button>
               </div>
-              <div class="f2">
+              <div class="f" id="unitBox" hidden><label for="rUnit">所屬單位 <i>*</i></label><input id="rUnit" name="unit_other" type="text" placeholder="例：○○戶外工作室；個人參加請填「個人」" autocomplete="organization"></div>
+              <div class="f" id="contactNameBox" hidden><label for="rContact">聯絡人姓名 <i>*</i></label><input id="rContact" name="contact" type="text" autocomplete="name"></div>
+              <div class="f2" id="contactBox" hidden>
                 <div class="f"><label for="rPhone">聯絡人手機 <i>*</i></label><input id="rPhone" name="phone" type="tel" placeholder="例：0912345678" autocomplete="tel" inputmode="tel"></div>
                 <div class="f"><label for="rEmail">Email <i>*</i></label><input id="rEmail" name="email" type="email" placeholder="報名成功信會寄到這裡" autocomplete="email"></div>
               </div>
               <div class="f"><label for="rNote">想問 Yellow 教練的問題（選填）</label><textarea id="rNote" name="note" placeholder="例：學生第一次落水後就不敢再站起來，該怎麼陪？" style="min-height:90px"></textarea></div>
-              <label class="ck"><input type="checkbox" name="agree" id="rAgree" value="1"><span>我同意聯盟使用以上資料，聯繫本次活動相關事宜；活動結束後不會用於其他用途。</span></label>
+              <label class="ck"><input type="checkbox" name="agree" id="rAgree" value="1"><span>我同意聯盟使用報名資料，聯繫本次活動相關事宜；活動結束後不會用於其他用途。</span></label>
               <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
               <p class="err" role="alert" hidden></p>
               <button class="btn btn-lake" type="submit" style="align-self:flex-start">送出報名</button>
             </div>
           </fieldset>
         </form>
-        <div class="done" id="regDone" hidden><i class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><div><b>報名成功！</b><p>報名編號</p><p class="reg-id" id="doneId"></p><p id="doneWho"></p><p class="muted" style="font-size:14px">報名成功信已寄到 <span id="doneMail"></span>，沒看到請檢查促銷或垃圾郵件匣。</p><span class="member-note" id="doneMember" hidden>聯盟夥伴，11/2 見！</span></div></div>
+        <div class="done" id="regDone" hidden><i class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><div><b id="doneTitle">報名成功！</b><p>報名編號</p><p class="reg-id" id="doneId"></p><p id="doneWho"></p><p class="muted" style="font-size:14px">報名成功信已寄到 <span id="doneMail"></span>，沒看到請檢查促銷或垃圾郵件匣。</p><span class="member-note" id="doneMember" hidden>聯盟夥伴，11/2 見！</span></div></div>
       </div>
     </div>
   </section>
@@ -94,6 +105,6 @@
 </footer>
 <a class="sticky off" id="sticky" href="#apply">立即報名</a>
 <script src="/assets/site.js?v=20261009b" defer></script>
-<script src="/assets/reg.js?v=20261023b" defer></script>
+<script src="/assets/reg.js?v=20261023c" defer></script>
 </body>
 </html>

@@ -6,7 +6,8 @@
  *
  * 分頁：
  *   活動設定  一列一個活動（活動代號、名稱、日期、名額、報名開關…）
- *   設定      主辦信箱等基本設定（A:B），聯盟成員名單（D 欄）
+ *   設定      主辦信箱等基本設定
+ *   聯盟成員  一列一個俱樂部＋聯絡人、手機、Email（聯盟成員報名時自動帶入）
  *   報名      一列一筆報名
  *   紀錄      每次送出、寄信、錯誤都記一筆
  *
@@ -14,7 +15,8 @@
  */
 
 var TZ = 'Asia/Taipei';
-var SH = { EVENTS: '活動設定', SETTINGS: '設定', REG: '報名', LOG: '紀錄' };
+var SH = { EVENTS: '活動設定', SETTINGS: '設定', MEMBERS: '聯盟成員', REG: '報名', LOG: '紀錄' };
+var MEMBER_COLS = ['單位', '聯絡人', '手機', 'Email', '備註'];
 
 var EVENT_COLS = ['活動代號', '活動名稱', '日期', '時間', '地點', '名額（人，空白＝不限）', '報名截止（空白＝活動前一天）', '報名開關', '前一天提醒', '活動頁網址', '備註'];
 var REG_COLS = ['報名編號', '送出時間', '活動代號', '身分', '單位', '參加者', '人數', '聯絡人', '手機', 'Email', '備註', '測試', '報名狀態', '報名成功信', '前一天提醒', '報到'];
@@ -70,7 +72,10 @@ function getConfig_(code) {
       open: st.open, reason: st.reason,
       capacity: ev.capacity || null, remaining: ev.capacity ? Math.max(0, ev.capacity - used) : null
     },
-    members: getMembers_()
+    members: getMembers_().map(function (m) {
+      var ready = !!(m.phone && m.email);
+      return { name: m.name, ready: ready, contact: ready ? maskName_(m.contact) : '', phone: ready ? maskPhone_(m.phone) : '', email: ready ? maskEmail_(m.email) : '' };
+    })
   };
 }
 
@@ -105,12 +110,19 @@ function eventState_(ev, used) {
 }
 
 function getMembers_() {
-  var s = sheet_(SH.SETTINGS);
-  var last = s.getLastRow();
-  if (last < 2) return DEFAULT_MEMBERS;
-  var v = s.getRange(2, 4, last - 1, 1).getValues().map(function (r) { return String(r[0]).trim(); }).filter(String);
-  return v.length ? v : DEFAULT_MEMBERS;
+  var s = SpreadsheetApp.getActive().getSheetByName(SH.MEMBERS);
+  var rows = s && s.getLastRow() > 1 ? s.getRange(2, 1, s.getLastRow() - 1, 4).getValues() : [];
+  var list = rows.filter(function (r) { return String(r[0]).trim(); }).map(function (r, i) {
+    return { row: i + 2, name: String(r[0]).trim(), contact: String(r[1]).trim(), phone: String(r[2]).replace(/[^\d+]/g, ''), email: String(r[3]).trim().toLowerCase() };
+  });
+  return list.length ? list : DEFAULT_MEMBERS.map(function (n) { return { row: 0, name: n, contact: '', phone: '', email: '' }; });
 }
+function findMember_(name) { return getMembers_().filter(function (m) { return m.name === name; })[0] || null; }
+
+// 頁面只看得到遮罩後的聯絡資料
+function maskName_(n) { n = String(n || ''); return n.length <= 1 ? n : n.length === 2 ? n.charAt(0) + '○' : n.charAt(0) + '○'.repeat(n.length - 2) + n.charAt(n.length - 1); }
+function maskPhone_(p) { p = String(p || ''); return p.length >= 8 ? p.slice(0, 4) + '***' + p.slice(-3) : '***'; }
+function maskEmail_(e) { var m = String(e || '').split('@'); return m.length === 2 ? m[0].charAt(0) + '***@' + m[1] : '***'; }
 
 function setting_(key) {
   var rows = sheet_(SH.SETTINGS).getRange('A:B').getValues();
@@ -126,66 +138,100 @@ function register_(p) {
   var isMember = p.member === '1';
   var unit = clean_(p.unit, 60);
   var names = String(p.names || '').split(/\n/).map(function (n) { return clean_(n, 30); }).filter(String);
-  var phone = String(p.phone || '').replace(/[^\d+]/g, '');
-  var email = clean_(p.email, 100).toLowerCase();
+  var count = Math.max(Number(p.count) || 0, names.length, 1);
+  var contact = clean_(p.contact, 30), phone = String(p.phone || '').replace(/[^\d+]/g, ''), email = clean_(p.email, 100).toLowerCase();
   var note = clean_(p.note, 500);
-  var test = p.test === '1' || /測試|test/i.test(names.join(' '));
+  var test = p.test === '1' || /測試|test/i.test(names.join(' ') + contact);
+  var okPhone = function (v) { return /^(09\d{8}|\+?\d{9,15})$/.test(v); };
+  var okMail = function (v) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v); };
 
-  // 伺服器端再檢查一次
+  // 聯絡資料：聯盟成員由「聯盟成員」分頁帶入；非聯盟成員用表單填的
+  var member = null, filled = false;
+  if (isMember) {
+    member = findMember_(unit);
+    if (!member) return { ok: false, error: 'invalid', fields: ['所屬俱樂部'] };
+    if (member.phone && member.email) { contact = member.contact; phone = member.phone; email = member.email; }
+    else if (!(contact && okPhone(phone) && okMail(email))) return { ok: false, error: 'need_contact' };
+    else filled = true;
+  } else {
+    contact = names[0] || '';
+  }
+
   var miss = [];
-  if (!names.length) miss.push('參加者姓名');
-  if (isMember && !unit) miss.push('所屬俱樂部');
-  if (!/^(09\d{8}|\+?\d{9,15})$/.test(phone)) miss.push('手機');
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) miss.push('Email');
+  if (!isMember && !names.length) miss.push('參加者姓名');
+  if (!isMember && !unit) miss.push('所屬單位');
+  if (!contact) miss.push('聯絡人');
+  if (!okPhone(phone)) miss.push('手機');
+  if (!okMail(email)) miss.push('Email');
   if (p.agree !== '1') miss.push('同意個資使用');
-  if (names.length > 20) miss.push('一次最多 20 位');
+  if (count > 20) miss.push('一次最多 20 位');
   if (miss.length) return { ok: false, error: 'invalid', fields: miss };
-  if (isMember && getMembers_().indexOf(unit) < 0) return { ok: false, error: 'invalid', fields: ['所屬俱樂部'] };
 
   var dup = {};
   for (var k = 0; k < names.length; k++) { if (dup[names[k]]) return { ok: false, error: 'dup_name', name: names[k] }; dup[names[k]] = 1; }
 
+  var id, ev, updated = false;
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    var ev = findEvent_(code);
+    ev = findEvent_(code);
     if (!ev) return { ok: false, error: 'no_event' };
     var used = countPeople_(code);
     var st = eventState_(ev, used);
     if (!st.open) return { ok: false, error: 'closed', reason: st.reason };
-    if (ev.capacity && used + names.length > ev.capacity) return { ok: false, error: 'over', remaining: ev.capacity - used };
 
-    var existing = findByPhone_(code, phone);
-    if (existing && !test) return { ok: false, error: 'already', id: existing };
+    // 同一個俱樂部再報一次＝更新原本那筆；非聯盟成員以手機判斷重複
+    var old = test ? null : (isMember ? findByUnit_(code, unit) : findRowById_(findByPhone_(code, phone)));
+    if (old && !isMember) return { ok: false, error: 'already', id: old.values[0] };
+    var oldCount = old ? Number(old.values[6]) || 0 : 0;
+    if (ev.capacity && used - oldCount + count > ev.capacity) return { ok: false, error: 'over', remaining: ev.capacity - used + oldCount };
 
-    var id = newId_();
     var now = Utilities.formatDate(new Date(), TZ, 'yyyy/MM/dd HH:mm:ss');
     var s = sheet_(SH.REG);
-    s.appendRow([id, now, code, isMember ? '聯盟成員' : '非聯盟成員', unit, names.join('、'), names.length,
-      names[0], "'" + phone, email, note, test, '報名成功 ' + now.slice(5, 16), '', '', '']);
+    if (old) {
+      id = old.values[0]; updated = true;
+      s.getRange(old.row, 6, 1, 2).setValues([[names.join('、'), count]]);
+      if (note) s.getRange(old.row, 11).setValue(note);
+      s.getRange(old.row, 13).setValue('已更新 ' + now.slice(5, 16));
+    } else {
+      id = newId_();
+      s.appendRow([id, now, code, isMember ? '聯盟成員' : '非聯盟成員', unit, names.join('、'), count,
+        contact, "'" + phone, email, note, test, '報名成功 ' + now.slice(5, 16), '', '', '']);
+    }
     SpreadsheetApp.flush();
 
     // 寫入後讀回確認
     var row = findRowById_(id);
-    if (!row || String(row.values[8]).replace(/^'/, '') !== phone) {
-      log_('報名', code, id, '讀回驗證失敗', '失敗');
-      return { ok: false, error: 'server' };
+    if (!row || Number(row.values[6]) !== count) { log_('報名', code, id, '讀回驗證失敗', '失敗'); return { ok: false, error: 'server' }; }
+    log_(updated ? '更新報名' : '報名', code, id, (isMember ? '聯盟成員 ' : '') + unit + '｜' + count + ' 位' + (names.length ? '｜' + names.join('、') : '') + (test ? '（測試）' : ''), '成功');
+
+    // 聯盟成員第一次填的聯絡資料存回「聯盟成員」分頁，下次自動帶入（只補空白欄）
+    if (filled && member.row && !test) {
+      sheet_(SH.MEMBERS).getRange(member.row, 2, 1, 3).setValues([[contact, "'" + phone, email]]);
+      log_('成員資料', code, id, unit + ' 補上聯絡資料', '成功');
     }
-    log_('報名', code, id, (isMember ? '聯盟成員 ' : '') + (unit || '個人') + '｜' + names.join('、') + (test ? '（測試）' : ''), '成功');
   } finally {
     lock.releaseLock();
   }
 
-  // 寄信放在鎖外面
-  var reg = { id: id, names: names, unit: unit, isMember: isMember, phone: phone, email: email, note: note, test: test };
+  var reg = { id: id, names: names, count: count, contact: contact, unit: unit, isMember: isMember, phone: phone, email: email, note: note, test: test, updated: updated };
   try {
     sendConfirm_(ev, reg);
     sheet_(SH.REG).getRange(findRowById_(id).row, REG_COLS.indexOf('報名成功信') + 1).setValue('已寄 ' + stamp_());
-    log_('寄信', code, id, '報名成功信 → ' + email, '成功');
+    log_('寄信', code, id, (updated ? '更新通知' : '報名成功信') + ' → ' + email, '成功');
   } catch (err) { log_('寄信', code, id, '報名成功信 ' + err, '失敗'); }
   try { notifyOrganizer_(ev, reg); } catch (err2) { log_('寄信', code, id, '主辦通知 ' + err2, '失敗'); }
 
-  return { ok: true, id: id, count: names.length, event: { name: ev.name, date: ev.dateText, time: ev.time, place: ev.place } };
+  return { ok: true, id: id, count: count, updated: updated, email: maskEmail_(email) };
+}
+
+function findByUnit_(code, unit) {
+  var rows = sheet_(SH.REG).getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (String(r[2]) === code && r[3] === '聯盟成員' && String(r[4]) === unit && r[11] !== true && String(r[12]).indexOf('取消') < 0) return { row: i + 1, values: r };
+  }
+  return null;
 }
 
 function countPeople_(code) {
@@ -207,6 +253,7 @@ function findByPhone_(code, phone) {
 }
 
 function findRowById_(id) {
+  if (!id) return null;
   var rows = sheet_(SH.REG).getDataRange().getValues();
   for (var i = rows.length - 1; i >= 1; i--) if (rows[i][0] === id) return { row: i + 1, values: rows[i] };
   return null;
@@ -240,16 +287,17 @@ function mailHtml_(title, intro, rows, foot) {
 function eventRows_(ev, reg) {
   var rows = [['報名編號', reg.id], ['活動', ev.name], ['時間', ev.dateText + ' ' + ev.time], ['地點', ev.place]];
   rows.push(['身分', reg.isMember ? '聯盟成員｜' + reg.unit : '非聯盟成員' + (reg.unit ? '｜' + reg.unit : '')]);
-  rows.push(['參加者', reg.names.join('、') + '（共 ' + reg.names.length + ' 位）']);
+  rows.push(['參加人數', (reg.count || reg.names.length) + ' 位' + (reg.names.length ? '（' + reg.names.join('、') + '）' : '')]);
+  if (reg.contact) rows.push(['聯絡人', reg.contact]);
   return rows;
 }
 
 function sendConfirm_(ev, reg) {
-  var subject = (reg.test ? '【測試】' : '') + '報名成功｜' + ev.name;
-  var intro = esc_(reg.names[0]) + ' 您好，<br>已收到您的報名，以下是報名資料，活動當天見！' + (ev.remind ? '<br>活動前一天會再寄一封提醒信。' : '');
+  var subject = (reg.test ? '【測試】' : '') + (reg.updated ? '報名已更新｜' : '報名成功｜') + ev.name;
+  var intro = esc_(reg.contact || reg.names[0]) + ' 您好，<br>' + (reg.updated ? '您的報名已更新，以下是最新的報名資料。' : '已收到您的報名，以下是報名資料，活動當天見！') + (ev.remind ? '<br>活動前一天會再寄一封提醒信。' : '');
   MailApp.sendEmail({
     to: reg.email, subject: subject, name: setting_('寄件名稱'), replyTo: setting_('回信信箱'),
-    htmlBody: mailHtml_('報名成功', intro, eventRows_(ev, reg), ev.url ? '活動資訊：' + esc_(ev.url) + '<br>' : ''),
+    htmlBody: mailHtml_(reg.updated ? '報名已更新' : '報名成功', intro, eventRows_(ev, reg), ev.url ? '活動資訊：' + esc_(ev.url) + '<br>' : ''),
     body: '報名成功｜' + ev.name + '\n報名編號 ' + reg.id + '\n時間 ' + ev.dateText + ' ' + ev.time + '\n地點 ' + ev.place
   });
 }
@@ -259,8 +307,8 @@ function notifyOrganizer_(ev, reg) {
   var used = countPeople_(ev.code);
   var rows = eventRows_(ev, reg).concat([['手機', reg.phone], ['Email', reg.email], ['備註', reg.note || '—'], ['目前人數', used + (ev.capacity ? ' / ' + ev.capacity : '') + ' 人']]);
   MailApp.sendEmail({
-    to: to, subject: (reg.test ? '【測試】' : '') + '新報名｜' + ev.name + '｜' + (reg.unit || reg.names[0]),
-    name: setting_('寄件名稱'), htmlBody: mailHtml_('有一筆新報名', '', rows, '')
+    to: to, subject: (reg.test ? '【測試】' : '') + (reg.updated ? '報名更新｜' : '新報名｜') + ev.name + '｜' + (reg.unit || reg.contact),
+    name: setting_('寄件名稱'), htmlBody: mailHtml_(reg.updated ? '有一筆報名更新' : '有一筆新報名', '', rows, '')
   });
 }
 
@@ -285,11 +333,11 @@ function sendReminders_(manual, onlyCode) {
       var v = rows[r];
       if (String(v[2]) !== ev.code || v[11] === true || String(v[12]).indexOf('取消') >= 0 || v[14]) continue;
       if (MailApp.getRemainingDailyQuota() < 5) { skipped++; continue; }
-      var reg = { id: v[0], names: String(v[5]).split('、'), unit: v[4], isMember: v[3] === '聯盟成員', email: v[9] };
+      var reg = { id: v[0], names: String(v[5]).split('、').filter(String), count: Number(v[6]) || 0, contact: v[7], unit: v[4], isMember: v[3] === '聯盟成員', email: v[9] };
       try {
         MailApp.sendEmail({
           to: reg.email, subject: '明天見｜' + ev.name, name: setting_('寄件名稱'), replyTo: setting_('回信信箱'),
-          htmlBody: mailHtml_('明天見！', esc_(reg.names[0]) + ' 您好，提醒您明天的活動，期待見面。', eventRows_(ev, reg), '')
+          htmlBody: mailHtml_('明天見！', esc_(reg.contact) + ' 您好，提醒您明天的活動，期待見面。', eventRows_(ev, reg), '')
         });
         s.getRange(r + 1, col).setValue('已寄 ' + stamp_()); sent++;
         log_('寄信', ev.code, reg.id, '前一天提醒', '成功');
@@ -339,18 +387,17 @@ function setupSheets() {
   var ss = SpreadsheetApp.getActive();
   ss.setSpreadsheetTimeZone(TZ);
   ensure_(ss, SH.EVENTS, EVENT_COLS, [['coach-talk-2026', '從一次體驗到玩家：教練的陪伴力', '2026/11/02', '13:00–15:00', '魚光窯烤 埔里門市（南投縣埔里鎮中山路四段 106 號）', '', '', '開放', '開', 'https://sunmoonlake.xyz/events/coach-talk-2026/', '講者 Yellow 教練；不審核、不收費']]);
-  var st = ensure_(ss, SH.SETTINGS, ['項目', '內容', '說明', '聯盟成員（一列一個，報名表下拉選單會跟著更新）'], []);
-  if (st.getLastRow() < 2) {
-    st.getRange(2, 1, DEFAULT_SETTINGS.length, 3).setValues(DEFAULT_SETTINGS);
-    st.getRange(2, 4, DEFAULT_MEMBERS.length, 1).setValues(DEFAULT_MEMBERS.map(function (m) { return [m]; }));
-  }
+  var st = ensure_(ss, SH.SETTINGS, ['項目', '內容', '說明'], []);
+  if (st.getLastRow() < 2) st.getRange(2, 1, DEFAULT_SETTINGS.length, 3).setValues(DEFAULT_SETTINGS);
+  var ms = ensure_(ss, SH.MEMBERS, MEMBER_COLS, DEFAULT_MEMBERS.map(function (m) { return [m, '', '', '', '']; }));
+  ms.getRange('C:C').setNumberFormat('@');
   var rs = ensure_(ss, SH.REG, REG_COLS, []);
   rs.getRange(2, REG_COLS.indexOf('測試') + 1, 1000, 1).insertCheckboxes();
   ensure_(ss, SH.LOG, LOG_COLS, []);
   var ev = ss.getSheetByName(SH.EVENTS);
   ev.getRange('H2:H').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['開放', '暫停']).build());
   ev.getRange('I2:I').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['開', '關']).build());
-  SpreadsheetApp.getUi().alert('完成！已建立「活動設定」「設定」「報名」「紀錄」四個分頁。');
+  SpreadsheetApp.getUi().alert('完成！已建立「活動設定」「設定」「聯盟成員」「報名」「紀錄」五個分頁。\n\n請到「聯盟成員」分頁填上各俱樂部的聯絡人、手機、Email，聯盟成員報名時就會自動帶入。');
 }
 
 function installTrigger() {
@@ -375,7 +422,7 @@ function menuTestMail() {
   var me = Session.getActiveUser().getEmail();
   var ev = findEvent_('coach-talk-2026') || { name: '測試活動', dateText: '2026/11/2（一）', time: '13:00–15:00', place: '測試地點', remind: true };
   MailApp.sendEmail({ to: me, subject: '【測試】報名成功信版型', name: setting_('寄件名稱'),
-    htmlBody: mailHtml_('報名成功', '這是一封測試信，請用手機 Gmail 打開確認版面正常。', eventRows_(ev, { id: 'R-TEST01', names: ['王小明', '李小華'], unit: '魚人立槳', isMember: true }), '') });
+    htmlBody: mailHtml_('報名成功', '這是一封測試信，請用手機 Gmail 打開確認版面正常。', eventRows_(ev, { id: 'R-TEST01', names: ['王小明', '李小華'], count: 2, contact: '王小明', unit: '魚人立槳', isMember: true }), '') });
   SpreadsheetApp.getUi().alert('已寄到 ' + me + '，請用手機打開看看。');
 }
 
@@ -389,7 +436,7 @@ function menuHealth() {
     if (seen[k]) issues.push('第 ' + n + ' 列：手機與第 ' + seen[k] + ' 列重複（' + v[7] + '）'); else seen[k] = n;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v[9])) issues.push('第 ' + n + ' 列：Email 格式不對');
     if (!v[13]) issues.push('第 ' + n + ' 列：報名成功信沒有寄出（' + v[7] + '）');
-    if ((Number(v[6]) || 0) !== String(v[5]).split('、').filter(String).length) issues.push('第 ' + n + ' 列：人數與參加者名單對不上');
+    if (String(v[5]).split('、').filter(String).length > (Number(v[6]) || 0)) issues.push('第 ' + n + ' 列：參加者名單比人數還多');
   }
   SpreadsheetApp.getUi().alert(issues.length ? '發現 ' + issues.length + ' 個問題：\n\n' + issues.slice(0, 30).join('\n') : '資料健檢完成，沒有發現問題。');
 }
