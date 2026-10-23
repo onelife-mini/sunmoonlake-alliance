@@ -344,7 +344,7 @@ function sendReminders_(manual, onlyCode) {
       } catch (err) { log_('寄信', ev.code, reg.id, '前一天提醒 ' + err, '失敗'); }
     }
   }
-  if (manual) SpreadsheetApp.getUi().alert('已寄出 ' + sent + ' 封提醒信。' + (skipped ? '\n今天寄信額度不夠，還有 ' + skipped + ' 封沒寄，明天再按一次（已寄的不會重寄）。' : ''));
+  if (manual) uiAlert_('已寄出 ' + sent + ' 封提醒信。' + (skipped ? '\n今天寄信額度不夠，還有 ' + skipped + ' 封沒寄，明天再按一次（已寄的不會重寄）。' : ''));
 }
 
 function sendDigest_() {
@@ -397,13 +397,13 @@ function setupSheets() {
   var ev = ss.getSheetByName(SH.EVENTS);
   ev.getRange('H2:H').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['開放', '暫停']).build());
   ev.getRange('I2:I').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['開', '關']).build());
-  SpreadsheetApp.getUi().alert('完成！已建立「活動設定」「設定」「聯盟成員」「報名」「紀錄」五個分頁。\n\n請到「聯盟成員」分頁填上各俱樂部的聯絡人、手機、Email，聯盟成員報名時就會自動帶入。');
+  uiAlert_('完成！已建立「活動設定」「設定」「聯盟成員」「報名」「紀錄」五個分頁。\n\n請到「聯盟成員」分頁填上各俱樂部的聯絡人、手機、Email，聯盟成員報名時就會自動帶入。');
 }
 
 function installTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'dailyJob') ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('dailyJob').timeBased().atHour(8).everyDays(1).inTimezone(TZ).create();
-  SpreadsheetApp.getUi().alert('已設定：每天早上 8 點自動寄「活動前一天提醒」與「待處理清單」。');
+  uiAlert_('已設定：每天早上 8 點自動寄「活動前一天提醒」與「待處理清單」。');
 }
 
 function menuRemind() {
@@ -423,7 +423,7 @@ function menuTestMail() {
   var ev = findEvent_('coach-talk-2026') || { name: '測試活動', dateText: '2026/11/2（一）', time: '13:00–15:00', place: '測試地點', remind: true };
   MailApp.sendEmail({ to: me, subject: '【測試】報名成功信版型', name: setting_('寄件名稱'),
     htmlBody: mailHtml_('報名成功', '這是一封測試信，請用手機 Gmail 打開確認版面正常。', eventRows_(ev, { id: 'R-TEST01', names: ['王小明', '李小華'], count: 2, contact: '王小明', unit: '魚人立槳', isMember: true }), '') });
-  SpreadsheetApp.getUi().alert('已寄到 ' + me + '，請用手機打開看看。');
+  uiAlert_('已寄到 ' + me + '，請用手機打開看看。');
 }
 
 function menuHealth() {
@@ -438,19 +438,22 @@ function menuHealth() {
     if (!v[13]) issues.push('第 ' + n + ' 列：報名成功信沒有寄出（' + v[7] + '）');
     if (String(v[5]).split('、').filter(String).length > (Number(v[6]) || 0)) issues.push('第 ' + n + ' 列：參加者名單比人數還多');
   }
-  SpreadsheetApp.getUi().alert(issues.length ? '發現 ' + issues.length + ' 個問題：\n\n' + issues.slice(0, 30).join('\n') : '資料健檢完成，沒有發現問題。');
+  uiAlert_(issues.length ? '發現 ' + issues.length + ' 個問題：\n\n' + issues.slice(0, 30).join('\n') : '資料健檢完成，沒有發現問題。');
 }
 
 function checkAccount_() {
   var me = Session.getActiveUser().getEmail(), want = setting_('寄信帳號');
   if (want && me && me !== want) {
-    SpreadsheetApp.getUi().alert('目前登入的是 ' + me + '，寄信帳號應該是 ' + want + '。\n請切換帳號後再操作，這次沒有寄出任何信。');
+    uiAlert_('目前登入的是 ' + me + '，寄信帳號應該是 ' + want + '。\n請切換帳號後再操作，這次沒有寄出任何信。');
     return false;
   }
   return true;
 }
 
 /* ============================ 工具 ============================ */
+
+// 從編輯器直接執行時沒有試算表畫面，改寫到執行記錄
+function uiAlert_(msg) { try { SpreadsheetApp.getUi().alert(msg); } catch (e) { Logger.log(msg); } }
 
 function sheet_(name) {
   var s = SpreadsheetApp.getActive().getSheetByName(name);
