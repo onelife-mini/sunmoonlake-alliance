@@ -445,7 +445,7 @@ function onOpen() {
 function setupSheets() {
   var ss = ss_();
   ss.setSpreadsheetTimeZone(TZ);
-  ensure_(ss, SH.EVENTS, EVENT_COLS, [['coach-talk-2026', '從一次體驗到玩家：教練的陪伴力', '2026/11/02', '13:00–15:00', '魚光窯烤 埔里門市（南投縣埔里鎮中山路四段 106 號）', '', '', '開放', '開', 'https://sunmoonlake.xyz/events/coach-talk-2026/', '講者 Yellow 教練', '送出即完成', 0, '', '現場付款', '']]);
+  ensure_(ss, SH.EVENTS, EVENT_COLS, [['coach-talk-2026', '從一次體驗到玩家：教練的陪伴力', '2026/11/09', '13:00–15:00', '魚光窯烤 埔里門市（南投縣埔里鎮中山路四段 106 號）', '', '', '開放', '開', 'https://sunmoonlake.xyz/events/coach-talk-2026/', '講者 Yellow 教練', '送出即完成', 0, '', '現場付款', '']]);
   var st = ensure_(ss, SH.SETTINGS, ['項目', '內容', '說明'], []);
   if (st.getLastRow() < 2) st.getRange(2, 1, DEFAULT_SETTINGS.length, 3).setValues(DEFAULT_SETTINGS);
   var ms = ensure_(ss, SH.MEMBERS, MEMBER_COLS, DEFAULT_MEMBERS.map(function (m) { return [m, '', '', '', '']; }));
@@ -502,7 +502,7 @@ function menuRemind() {
 
 function menuTestMail() {
   var me = Session.getActiveUser().getEmail();
-  var ev = findEvent_('coach-talk-2026') || { name: '測試活動', dateText: '2026/11/2（一）', time: '13:00–15:00', place: '測試地點', remind: true };
+  var ev = findEvent_('coach-talk-2026') || { name: '測試活動', dateText: '2026/11/9（一）', time: '13:00–15:00', place: '測試地點', remind: true };
   MailApp.sendEmail({ to: me, subject: '【測試】報名成功信版型', name: setting_('寄件名稱'),
     htmlBody: mailHtml_('報名成功', '這是一封測試信，請用手機 Gmail 打開確認版面正常。', eventRows_(ev, { id: 'R-TEST01', names: ['王小明', '李小華'], count: 2, contact: '王小明', unit: '魚人立槳', isMember: true }), '') });
   uiAlert_('已寄到 ' + me + '，請用手機打開看看。');
