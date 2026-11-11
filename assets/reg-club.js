@@ -15,7 +15,7 @@
   var state = $('#regState'), done = $('#regDone'), fee = $('#feeLine');
   var joined = document.getElementById('joinedList'), joinedCount = document.getElementById('joinedCount');
   var units = null;   // 後端回傳的已參與俱樂部；null＝後端還沒提供名單
-  var PRESET = ['樂晴', '行舟戶外', '魚人立槳', '滑人立槳', '霏帆', '南投縣日月潭水上觀光遊憩發展協會', '浪人槳堂', '控制狂', '迷鹿 SUP'];   // 已確認參加的俱樂部（Leo 提供），與報名名單合併去重
+  var PRESET = ['樂晴', '行舟戶外', '魚人立槳', '滑人立槳', '霏帆', '南投縣日月潭水上觀光遊憩發展協會', '浪人槳堂', '控制狂', '迷鹿 SUP', '解鎖戶外'];   // 已確認參加的俱樂部（Leo 提供），與報名名單合併去重
   var EV = null;      // 後端回傳的活動設定
 
   function showState(kind, text) { state.hidden = false; state.className = 'reg-state ' + kind; state.textContent = text; }
