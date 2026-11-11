@@ -53,7 +53,7 @@
       }
       if (ev.fee && ev.perUnit) {
         fee.hidden = false;
-        fee.innerHTML = '<b>費用</b> 每家俱樂部 <strong>' + ev.fee.toLocaleString('en-US') + ' 元</strong><small>' + (ev.pay === '匯款' ? '送出後確認信會附上匯款資訊' : '活動當天現場繳交，用來分攤餐費') + '</small>';
+        fee.innerHTML = '<b>費用</b> 每家俱樂部 <strong>1,000～2,000 元</strong><small>依實際參加人數公告，最少 1,000、最多不超過 2,000；' + ' + (ev.pay === '匯款' ? '送出後確認信會附上匯款資訊' : '活動當天現場繳交，用來分攤餐費') + '</small>';
       }
     }).catch(function () { renderJoined(); /* 讀不到時仍可報名 */ });
   }
