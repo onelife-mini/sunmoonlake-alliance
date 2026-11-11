@@ -22,7 +22,9 @@ var SH = { EVENTS: '活動設定', SETTINGS: '設定', MEMBERS: '聯盟成員', 
 var MEMBER_COLS = ['單位', '聯絡人', '手機', 'Email', '備註'];
 
 var EVENT_COLS = ['活動代號', '活動名稱', '日期', '時間', '地點', '名額（人，空白＝不限）', '報名截止（空白＝活動前一天）', '報名開關', '前一天提醒', '活動頁網址', '備註',
-  '審核方式', '費用（每人，0＝免費）', '聯盟成員費用（空白＝同上）', '付款方式', '匯款資訊'];
+  '審核方式', '費用（每人，0＝免費）', '聯盟成員費用（空白＝同上）', '付款方式', '匯款資訊',
+  '計費方式', '每筆人數上限（空白＝20）', '公開已報名單位'];
+var FEE_UNIT_OPTS = ['每人', '每單位'];   // 每單位：費用欄是「一個單位（俱樂部）」的費用，不乘人數
 var REVIEW_OPTS = ['送出即完成', '非聯盟成員需審核', '全部需審核'];
 var PAY_OPTS = ['現場付款', '匯款'];
 var REG_COLS = ['報名編號', '送出時間', '活動代號', '身分', '單位', '參加者', '人數', '聯絡人', '手機', 'Email', '備註', '測試', '報名狀態', '報名成功信', '前一天提醒', '報到',
@@ -80,8 +82,10 @@ function getConfig_(code) {
       code: ev.code, name: ev.name, date: ev.dateText, time: ev.time, place: ev.place,
       open: st.open, reason: st.reason,
       capacity: ev.capacity || null, remaining: ev.capacity ? Math.max(0, ev.capacity - used) : null,
-      review: ev.review, fee: ev.fee, memberFee: ev.memberFee, pay: ev.pay
+      review: ev.review, fee: ev.fee, memberFee: ev.memberFee, pay: ev.pay,
+      perUnit: ev.perUnit, maxPeople: ev.maxPeople
     },
+    units: ev.showUnits ? listUnits_(code) : null,
     members: getMembers_().map(function (m) {
       var ready = !!(m.phone && m.email);
       return { name: m.name, ready: ready, contact: ready ? maskName_(m.contact) : '', phone: ready ? maskPhone_(m.phone) : '', email: ready ? maskEmail_(m.email) : '' };
@@ -107,7 +111,10 @@ function findEvent_(code) {
         fee: Math.max(0, Number(r[12]) || 0),
         memberFee: String(r[13]).trim() === '' ? null : Math.max(0, Number(r[13]) || 0),
         pay: String(r[14] || '').trim() === '匯款' ? '匯款' : '現場付款',
-        payInfo: String(r[15] || '').trim()
+        payInfo: String(r[15] || '').trim(),
+        perUnit: String(r[16] || '').trim() === '每單位',
+        maxPeople: Math.min(20, Math.max(1, Number(r[17]) || 20)),
+        showUnits: String(r[18] || '').trim() === '開'
       };
     }
   }
@@ -118,6 +125,8 @@ function eventState_(ev, used) {
   if (!ev.switchOn) return { open: false, reason: 'paused' };
   var now = new Date();
   var deadline = ev.deadline;
+  // 報名截止只填日期時，算到當天 23:59:59
+  if (deadline && deadline.getHours() === 0 && deadline.getMinutes() === 0) { deadline = new Date(deadline.getTime()); deadline.setHours(23, 59, 59); }
   if (!deadline && ev.date) { deadline = new Date(ev.date.getTime()); deadline.setHours(23, 59, 59); deadline.setDate(deadline.getDate() - 1); }
   if (deadline && now > deadline) return { open: false, reason: 'deadline' };
   if (ev.capacity && used >= ev.capacity) return { open: false, reason: 'full' };
@@ -126,6 +135,7 @@ function eventState_(ev, used) {
 
 function needsReview_(ev, isMember) { return ev.review === '全部需審核' || (ev.review === '非聯盟成員需審核' && !isMember); }
 function unitFee_(ev, isMember) { return isMember && ev.memberFee !== null ? ev.memberFee : ev.fee; }
+function amount_(ev, isMember, count) { return unitFee_(ev, isMember) * (ev.perUnit ? 1 : count); }
 
 function getMembers_() {
   var s = ss_().getSheetByName(SH.MEMBERS);
@@ -197,6 +207,9 @@ function register_(p) {
     var used = countPeople_(code);
     var st = eventState_(ev, used);
     if (!st.open) return { ok: false, error: 'closed', reason: st.reason };
+    if (count > ev.maxPeople) return { ok: false, error: 'invalid', fields: ['每筆最多 ' + ev.maxPeople + ' 位'] };
+    // 以單位計費的活動：同一個單位只能報一筆（非聯盟成員用單位名稱判斷）
+    if (ev.perUnit && !isMember && !test && unitTaken_(code, unit)) return { ok: false, error: 'unit_taken' };
 
     // 同一個俱樂部再報一次＝更新原本那筆；非聯盟成員以手機判斷重複
     var old = test ? null : (isMember ? findByUnit_(code, unit) : findRowById_(findByPhone_(code, phone)));
@@ -206,7 +219,7 @@ function register_(p) {
 
     var now = Utilities.formatDate(new Date(), TZ, 'yyyy/MM/dd HH:mm:ss');
     var review = needsReview_(ev, isMember);
-    var amount = unitFee_(ev, isMember) * count;
+    var amount = amount_(ev, isMember, count);
     var s = sheet_(SH.REG);
     if (old) {
       id = old.values[0]; updated = true;
@@ -256,6 +269,24 @@ function findByUnit_(code, unit) {
     if (String(r[2]) === code && r[3] === '聯盟成員' && String(r[4]) === unit && active_(r)) return { row: i + 1, values: r };
   }
   return null;
+}
+
+function unitKey_(u) { return String(u || '').normalize('NFKC').replace(/\s/g, '').toLowerCase(); }
+function unitTaken_(code, unit) {
+  var rows = sheet_(SH.REG).getDataRange().getValues(), k = unitKey_(unit);
+  for (var i = 1; i < rows.length; i++) if (String(rows[i][2]) === code && active_(rows[i]) && unitKey_(rows[i][4]) === k) return true;
+  return false;
+}
+
+// 公開的已報名單位（只有單位名稱，不含個資；不算測試、取消、未錄取、待審核）
+function listUnits_(code) {
+  var rows = sheet_(SH.REG).getDataRange().getValues(), seen = {}, out = [];
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i], u = String(r[4]).trim();
+    if (String(r[2]) !== code || !active_(r) || /待審核/.test(String(r[12])) || !u || seen[unitKey_(u)]) continue;
+    seen[unitKey_(u)] = 1; out.push(u);
+  }
+  return out;
 }
 
 function countPeople_(code) {
@@ -314,7 +345,7 @@ function eventRows_(ev, reg) {
   rows.push(['參加人數', (reg.count || reg.names.length) + ' 位' + (reg.names.length ? '（' + reg.names.join('、') + '）' : '')]);
   if (reg.contact) rows.push(['聯絡人', reg.contact]);
   if (reg.amount) {
-    rows.push(['費用', reg.amount + ' 元（每人 ' + (reg.amount / (reg.count || 1)) + ' 元 × ' + reg.count + ' 位）']);
+    rows.push(['費用', ev.perUnit ? reg.amount + ' 元（每單位一筆）' : reg.amount + ' 元（每人 ' + (reg.amount / (reg.count || 1)) + ' 元 × ' + reg.count + ' 位）']);
     rows.push(['付款方式', ev.pay + (ev.pay === '匯款' && ev.payInfo ? '\n' + ev.payInfo : '')]);
   } else if (ev.fee === 0 && ev.memberFee === null) rows.push(['費用', '免費']);
   return rows;
@@ -325,6 +356,7 @@ function sendConfirm_(ev, reg) {
   if (reg.updated && !reg.review) { head = '報名已更新'; msg = '我們有收到您更新的報名，以下是最新的報名資料。'; }
   else if (reg.review) { head = '已收到報名'; msg = '我們有收到您的報名資訊，審核後會再寄出通知給您。'; }
   else if (reg.isMember) { head = '報名完成'; msg = '我們有收到您的報名。聯盟夥伴直接完成報名，請活動當天準時出席。'; }
+  else if (ev.perUnit) { head = '報名完成'; msg = '我們有收到您的報名，請活動當天準時出席。'; }
   else { head = '已收到報名'; msg = '我們有收到您的報名資訊，後續會再寄出通知給您。'; }
   if (reg.amount && !reg.review) msg += ev.pay === '匯款' ? '<br>費用請依下方匯款資訊完成匯款，並回覆這封信告知帳號末五碼。' : '<br>費用請於活動當天現場繳交。';
   var subject = (reg.test ? '【測試】' : '') + head + '｜' + ev.name;
@@ -363,6 +395,7 @@ function notifyOrganizer_(ev, reg) {
   var to = setting_('主辦信箱'); if (!to) return;
   var used = countPeople_(ev.code);
   var rows = eventRows_(ev, reg).concat([['手機', reg.phone], ['Email', reg.email], ['備註', reg.note || '—'], ['目前人數', used + (ev.capacity ? ' / ' + ev.capacity : '') + ' 人']]);
+  if (ev.perUnit) rows.push(['已報名單位', listUnits_(ev.code).length + ' 個（名稱會公開在活動頁，冒名或打錯請把該筆報名狀態改成「取消」）']);
   if (reg.review) rows.unshift(['待處理', '這筆需要審核：到試算表「報名」分頁，把報名狀態改成「錄取」或「未錄取」，系統一小時內會寄出通知。']);
   MailApp.sendEmail({
     to: to, subject: (reg.test ? '【測試】' : '') + (reg.updated ? '報名更新｜' : '新報名｜') + ev.name + '｜' + (reg.unit || reg.contact),
@@ -478,6 +511,8 @@ function upgradeSheets() {
   var c = function (name) { return EVENT_COLS.indexOf(name) + 1; };
   ev.getRange(2, c('審核方式'), 200, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(REVIEW_OPTS).build());
   ev.getRange(2, c('付款方式'), 200, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(PAY_OPTS).build());
+  ev.getRange(2, c('計費方式'), 200, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(FEE_UNIT_OPTS).setAllowInvalid(true).build());
+  ev.getRange(2, c('公開已報名單位'), 200, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['開', '關']).setAllowInvalid(true).build());
   var vals = ev.getRange(2, c('審核方式'), n, 4).getValues().map(function (r) { return [r[0] || '送出即完成', r[1] === '' ? 0 : r[1], r[2], r[3] || '現場付款']; });
   ev.getRange(2, c('審核方式'), n, 4).setValues(vals);
   var rs = ss.getSheetByName(SH.REG);
@@ -485,7 +520,7 @@ function upgradeSheets() {
     .requireValueInList(['報名成功', '已更新', '待審核', '錄取', '未錄取', '取消'], true).setAllowInvalid(true).build());
   rs.getRange(2, REG_COLS.indexOf('付款狀態') + 1, 500, 1).setDataValidation(SpreadsheetApp.newDataValidation()
     .requireValueInList(['免費', '未付款', '已付款'], true).setAllowInvalid(true).build());
-  uiAlert_('升級完成：「活動設定」新增審核方式、費用、付款方式欄位。');
+  uiAlert_('升級完成：「活動設定」新增審核方式、費用、付款方式、計費方式、人數上限、公開已報名單位欄位。');
 }
 
 function menuRemind() {
