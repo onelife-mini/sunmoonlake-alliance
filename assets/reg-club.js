@@ -15,6 +15,7 @@
   var state = $('#regState'), done = $('#regDone'), fee = $('#feeLine');
   var joined = document.getElementById('joinedList'), joinedCount = document.getElementById('joinedCount');
   var units = null;   // 後端回傳的已參與俱樂部；null＝後端還沒提供名單
+  var PRESET = ['樂晴', '行舟戶外', '魚人立槳'];   // 已確認參加的俱樂部（Leo 提供），與報名名單合併去重
   var EV = null;      // 後端回傳的活動設定
 
   function showState(kind, text) { state.hidden = false; state.className = 'reg-state ' + kind; state.textContent = text; }
@@ -23,10 +24,11 @@
   function renderJoined() {
     if (!joined) return;
     joined.innerHTML = '';
-    if (!units) { joined.innerHTML = '<li class="empty">名單整理中，報名後會陸續公布。</li>'; if (joinedCount) joinedCount.textContent = '—'; return; }
-    if (!units.length) joined.innerHTML = '<li class="empty">還沒有俱樂部報名，歡迎成為第一家！</li>';
-    units.forEach(function (u) { var li = document.createElement('li'); li.textContent = u; joined.appendChild(li); });
-    if (joinedCount) joinedCount.textContent = units.length;
+    var list = PRESET.slice();
+    (units || []).forEach(function (u) { u = String(u).trim(); if (u && list.indexOf(u) < 0) list.push(u); });
+    if (!list.length) joined.innerHTML = '<li class="empty">還沒有俱樂部報名，歡迎成為第一家！</li>';
+    list.forEach(function (u) { var li = document.createElement('li'); li.textContent = u; joined.appendChild(li); });
+    if (joinedCount) joinedCount.textContent = list.length;
   }
 
   function load() {
