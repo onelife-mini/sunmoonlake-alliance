@@ -73,7 +73,7 @@ h2{font-size:30px}
 .hot:hover,.hot:focus-visible{background:rgba(255,255,255,.14);outline:3px solid #fff;outline-offset:-3px}
 .hot-join{left:57.143%;top:0}
 .hot-events{left:71.429%;top:25%}
-.hot-about{left:85.714%;top:75%}
+.hot-about{left:14.286%;top:75%}
 .hero .wrap{padding-block:28px 40px;display:flex;flex-direction:column;gap:12px}
 .hero h1{font-size:clamp(30px,5vw,54px);color:#fff}
 .hero .sub{color:var(--on-lake-muted);font-size:18px;max-width:34em}
